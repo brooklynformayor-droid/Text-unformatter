@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Text Humanizer & Formatting Unformatter</title>
+    <style>
+        :root { --bg: #f4f7f6; --card: #ffffff; --text: #2d3748; --primary: #0070f3; --border: #e2e8f0; }
+        .dark-theme { --bg: #1a202c; --card: #2d3748; --text: #edf2f7; --border: #4a5568; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: all 0.2s ease; }
+        .container { max-width: 850px; margin: 0 auto; background: var(--card); padding: 35px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h1 { margin: 0; font-size: 26px; font-weight: 700; }
+        p { color: #718096; margin-top: 5px; margin-bottom: 20px; }
+        textarea { width: 100%; height: 280px; padding: 18px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; line-height: 1.6; box-sizing: border-box; resize: vertical; background: var(--card); color: var(--text); }
+        .stats-bar { display: flex; gap: 24px; margin: 15px 0; font-size: 14px; color: #718096; font-weight: 600; }
+        .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #a0aec0; margin: 20px 0 8px 0; font-weight: 700; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+        button { background: var(--primary); color: white; border: none; padding: 12px 22px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600; transition: background 0.15s; }
+        button:hover { background: #0051bb; }
+        button.sec { background: #e2e8f0; color: #4a5568; }
+        button.sec:hover { background: #cbd5e0; }
+        .dark-theme button.sec { background: #4a5568; color: #edf2f7; }
+        .dark-theme button.sec:hover { background: #718096; }
+        .humanize-btn { background: #10b981; }
+        .humanize-btn:hover { background: #059669; }
+        .ad-box { margin-top: 30px; background: rgba(0,0,0,0.01); border: 2px dashed #cbd5e0; padding: 25px; text-align: center; color: #a0aec0; font-size: 12px; font-weight: bold; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>AI Text Humanizer & Unformatter</h1>
+            <p>Strip tracking formatting, remove AI giveaways, and smooth out sentence phrasing instantly.</p>
+        </div>
+        <button class="sec" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+    </div>
+    
+    <textarea id="mainInput" placeholder="Paste your text, essay draft, or AI-generated creative project paragraphs here..."></textarea>
+    
+    <div class="stats-bar">
+        <div>Words: <span id="wCount">0</span></div>
+        <div>Characters: <span id="cCount">0</span></div>
+        <div>Flow Score: <span id="flowScore">Natural</span></div>
+    </div>
+    
+    <div class="section-label">Smart AI Content Enhancers</div>
+    <div class="btn-row">
+        <button class="humanize-btn" onclick="humanizeText()">✨ Humanize AI Phrasing</button>
+        <button class="sec" onclick="varySentences()">⏳ Vary Sentence Structures</button>
+    </div>
+
+    <div class="section-label">Cleaners & Utility Formatters</div>
+    <div class="btn-row">
+        <button class="sec" onclick="zapFormatting()">Zap Layout & Double Spaces</button>
+        <button class="sec" onclick="stripBullets()">Drop Bullet Formatting</button>
+        <button class="sec" onclick="changeCase('title')">Title Case</button>
+        <button class="sec" onclick="changeCase('lower')">lowercase</button>
+    </div>
+
+    <div class="section-label">Actions</div>
+    <div class="btn-row">
+        <button style="background: #2db742;" onclick="copyToClipboard()">📋 Copy Output Text</button>
+        <button class="sec" style="color: #e53e3e;" onclick="clearCanvas()">Clear All</button>
+    </div>
+
+    <!-- REVENUE CONTAINER -->
+    <div class="ad-box" id="revenueSlot">
+        MONETIZATION PLACEMENT CONTAINER<br>
+        (Your Monetag Tracking Code or Verification Code Elements Go Right Inside Here)
+    </div>
+</div>
+
+<script>
+    const mainInput = document.getElementById('mainInput');
+
+    // Real-Time Analytics
+    mainInput.addEventListener('input', () => {
+        const txt = mainInput.value;
+        document.getElementById('cCount').innerText = txt.length;
+        const words = txt.trim().split(/\s+/).filter(i => i).length;
+        document.getElementById('wCount').innerText = words;
+        
+        // Dynamic feedback for stickiness
+        const score = document.getElementById('flowScore');
+        if (words === 0) { score.innerText = "Empty"; score.style.color = "#a0aec0"; }
+        else if (/delve|testament|furthermore|leverage|robust/i.test(txt)) { score.innerText = "Robotic / AI Slop"; score.style.color = "#e53e3e"; }
+        else { score.innerText = "Fluid / Human"; score.style.color = "#10b981"; }
+    });
+
+    // Main AI Phrasing Swapper Engine
+    function humanizeText() {
+        let text = mainInput.value;
+        if(!text) return;
+
+        // Map typical robotic AI generator fillers to standard human writing options
+        const dictionary = [
+            { bad: /\bFurthermore\b/g, good: "Also" },
+            { bad: /\bfurthermore\b/g, good: "plus" },
+            { bad: /\bIn conclusion\b/g, good: "Basically" },
+            { bad: /\bin conclusion\b/g, good: "all in all" },
+            { bad: /\bdelve into\b/g, good: "look into" },
+            { bad: /\bdelve\b/g, good: "explore" },
+            { bad: /\btestament to\b/g, good: "proof of" },
+            { bad: /\bleverage\b/g, good: "use" },
+            { bad: /\butilize\b/g, good: "use" },
+            { bad: /\brobust\b/g, good: "strong" },
+            { bad: /\bnotably\b/g, good: "especially" },
+            { bad: /\bconsequently\b/g, good: "so" },
+            { bad: /\bIn summary\b/g, good: "To sum it up" },
+            { bad: /\bcomprehensive\b/g, good: "complete" },
+            { bad: /\bmeticulously\b/g, good: "carefully" },
+            { bad: /\bparamount\b/g, good: "key" }
+        ];
+
+        dictionary.forEach(pair => { text = text.replace(pair.bad, pair.good); });
+        
+        // Casualize generic sentence structure patterns
+        text = text.replace(/It is important to note that\s+/gi, "Keep in mind that ");
+        text = text.replace(/Another crucial aspect is\s+/gi, "Also, ");
+        
+        mainInput.value = text;
+        mainInput.dispatchEvent(new Event('input'));
+    }
+
+    // Sentence Variance Engine (Breaks monotonous cadence)
+    function varySentences() {
+        let text = mainInput.value;
+        if(!text) return;
+        
+        // Locate long-winded commas and break them up into punchy variations
+        text = text.replace(/,\s+which\s+means\s+that\s+/gi, ". This means ");
+        text = text.replace(/,\s+thereby\s+allowing\s+us\s+to\s+/gi, ". This lets us ");
+        
+        mainInput.value = text;
+        mainInput.dispatchEvent(new Event('input'));
+    }
+
+    // Classic Cleaning Utilities
+    function zapFormatting() {
+        let text = mainInput.value;
+        text = text.replace(/[ \t]+/g, ' '); // Drops hidden spaces
+        text = text.replace(/\n\s*\n/g, '\n\n'); // Compiles multi-returns
+        mainInput.value = text.trim();
+        mainInput.dispatchEvent(new Event('input'));
+    }
+
+    function stripBullets() {
+        let text = mainInput.value;
+        text = text.replace(/^[ \t]*[•\*\-\d+\.]+[ \t]*/gm, '');
+        mainInput.value = text.trim();
+        mainInput.dispatchEvent(new Event('input'));
+    }
+
+    function changeCase(type) {
+        let text = mainInput.value;
+        if (type === 'lower') text = text.toLowerCase();
+        if (type === 'title') {
+            text = text.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+        mainInput.value = text;
+        mainInput.dispatchEvent(new Event('input'));
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('dark-theme');
+        const darkActive = document.body.classList.contains('dark-theme');
+        document.getElementById('themeBtn').innerText = darkActive ? "☀️ Light" : "🌙 Dark";
+    }
+
+    function copyToClipboard() {
+        if(!mainInput.value) return;
+        mainInput.select();
+        navigator.clipboard.writeText(mainInput.value);
+        alert('Humanized text successfully saved to clipboard!');
+    }
+
+    function clearCanvas() {
+        mainInput.value = '';
+        mainInput.dispatchEvent(new Event('input'));
+    }
+</script>
+
+</body>
+</html>
